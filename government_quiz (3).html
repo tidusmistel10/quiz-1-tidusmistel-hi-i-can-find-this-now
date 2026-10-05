@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Government Quiz</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: Arial, sans-serif; background: #f2f4f7;
+    min-height: 100vh; display: flex; justify-content: center; align-items: center;
+  }
+  .quiz {
+    width: min(850px, 94vw); background: white; padding: 30px;
+    border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.12);
+  }
+  h1 { margin-top: 0; text-align: center; }
+  #section { color: #666; text-align: center; font-weight: bold; }
+  #question { font-size: 24px; margin: 25px 0; }
+  .choice {
+    display: flex; align-items: center; width: 100%; padding: 15px; margin: 10px 0;
+    border: 2px solid #ddd; border-radius: 10px; background: white;
+    text-align: left; font-size: 17px; cursor: pointer;
+  }
+  .choice:hover { background: #f5f5f5; }
+  .choice-letter {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; margin-right: 12px;
+    border-radius: 50%; background: #eee; font-weight: bold;
+  }
+  .correct { border-color: #2e9d55; background: #e9f8ee; }
+  .wrong { border-color: #d33; background: #fdeaea; }
+  #feedback { min-height: 25px; font-weight: bold; margin: 15px 0; }
+  #next, #restart {
+    border: 0; border-radius: 10px; padding: 13px 22px;
+    font-size: 16px; cursor: pointer; background: #222; color: white;
+  }
+  #next { display: none; }
+  .top { display: flex; justify-content: space-between; color: #555; }
+  .progress { height: 10px; background: #eee; border-radius: 10px; overflow: hidden; margin: 12px 0 25px; }
+  #bar { height: 100%; width: 0; background: #222; transition: width .2s; }
+  #result { text-align: center; display: none; }
+  #result h2 { font-size: 32px; }
+</style>
+</head>
+<body>
+<div class="quiz">
+  <div id="game">
+    <h1>Government Quiz</h1>
+    <div class="top"><span id="number"></span><span id="score">Score: 0</span></div>
+    <div class="progress"><div id="bar"></div></div>
+    <div id="section"></div>
+    <div id="question"></div>
+    <div id="choices"></div>
+    <div id="feedback"></div>
+    <button id="next" onclick="nextQuestion()">Next Question →</button>
+  </div>
+
+  <div id="result">
+    <h1>Quiz Complete!</h1>
+    <h2 id="finalScore"></h2>
+    <p id="message"></p>
+    <button id="restart" onclick="startQuiz()">Take Quiz Again</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  [
+    "1.1",
+    "Why do we need government?",
+    [
+      "To organize society and make rules",
+      "To choose everyone's hobbies",
+      "To remove all disagreements",
+      "To make every person equal"
+    ],
+    0
+  ],
+  [
+    "1.1",
+    "What is a democracy?",
+    [
+      "Rule by a royal family",
+      "Rule by a small group",
+      "Government by citizen participation",
+      "Rule by one powerful leader"
+    ],
+    2
+  ],
+  [
+    "1.1",
+    "What is an authoritarian government?",
+    [
+      "Citizens make every decision",
+      "Power is held by a limited group",
+      "Everyone votes on each law",
+      "Leaders have no real authority"
+    ],
+    1
+  ],
+  [
+    "1.1",
+    "What is a monarchy?",
+    [
+      "Government led by a monarch",
+      "Government led by judges",
+      "Government led by voters",
+      "Government led by a committee"
+    ],
+    0
+  ],
+  [
+    "1.1",
+    "What is a dictatorship?",
+    [
+      "Rule by elected representatives",
+      "Rule by a royal family",
+      "Rule by one main leader",
+      "Rule by all citizens"
+    ],
+    2
+  ],
+  [
+    "1.1",
+    "What is an oligarchy?",
+    [
+      "Rule by one person",
+      "Rule by a small group",
+      "Rule by all citizens",
+      "Rule by a monarch"
+    ],
+    1
+  ],
+  [
+    "1.1",
+    "What is direct democracy?",
+    [
+      "Citizens vote on decisions themselves",
+      "Citizens choose representatives to decide",
+      "A ruler makes political decisions",
+      "A small group controls decisions"
+    ],
+    0
+  ],
+  [
+    "1.1",
+    "What is indirect democracy?",
+    [
+      "Citizens make every decision",
+      "A monarch makes decisions",
+      "Representatives make decisions for citizens",
+      "A dictator makes political decisions"
+    ],
+    2
+  ],
+  [
+    "1.2",
+    "What does consensus mean?",
+    [
+      "A strong disagreement",
+      "A general agreement",
+      "A government order",
+      "A private opinion"
+    ],
+    1
+  ],
+  [
+    "1.2",
+    "What does politics mean?",
+    [
+      "The process of governing and making public decisions",
+      "The study of ancient history",
+      "A system for choosing sports teams",
+      "A private agreement between friends"
+    ],
+    0
+  ],
+  [
+    "1.2",
+    "What is an opposition party?",
+    [
+      "A party that supports every government decision",
+      "A party that is not in government and challenges it",
+      "A group that chooses judges",
+      "A party with no political views"
+    ],
+    1
+  ],
+  [
+    "1.2",
+    "What is free press?",
+    [
+      "News that is always free to read",
+      "News organizations able to report without improper government control",
+      "News written only by government officials",
+      "News that cannot criticize leaders"
+    ],
+    1
+  ],
+  [
+    "1.3",
+    "What do opposition parties do?",
+    [
+      "They question and challenge the government",
+      "They replace all government officials",
+      "They make every law themselves",
+      "They stop citizens from voting"
+    ],
+    0
+  ],
+  [
+    "1.3",
+    "What are people considered in an authoritarian government?",
+    [
+      "Rulers",
+      "Subjects with limited political power",
+      "Judges",
+      "Elected representatives"
+    ],
+    1
+  ],
+  [
+    "1.3",
+    "What are people considered in a democracy?",
+    [
+      "Subjects",
+      "Citizens with rights",
+      "Government employees",
+      "Political leaders"
+    ],
+    1
+  ],
+  [
+    "1.3",
+    "What can a citizen do in a democracy?",
+    [
+      "Vote and express political opinions",
+      "Make every law alone",
+      "Ignore all laws",
+      "Choose every court decision"
+    ],
+    0
+  ],
+  [
+    "1.3",
+    "What does First Nations government do?",
+    [
+      "Govern their communities within their authority",
+      "Control every level of Canadian government",
+      "Replace the federal government",
+      "Make laws for every country"
+    ],
+    0
+  ],
+  [
+    "1.4",
+    "What are some democratic ideals?",
+    [
+      "Equality, freedom, and participation",
+      "Censorship, fear, and control",
+      "Secrecy, force, and obedience",
+      "One ruler, one opinion, and no elections"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What is an egalitarian?",
+    [
+      "Someone who supports equality",
+      "Someone who supports monarchy",
+      "Someone who avoids politics",
+      "Someone who settles court cases"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does a government's power mean?",
+    [
+      "Its authority to make and enforce decisions",
+      "Its number of citizens",
+      "Its amount of money",
+      "Its number of political parties"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does coercion mean?",
+    [
+      "Using pressure or threats to make someone act",
+      "Trying to reach a peaceful agreement",
+      "Helping people understand each other",
+      "Giving someone a reward"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does dispute mean?",
+    [
+      "An agreement",
+      "A disagreement",
+      "A law",
+      "A reward"
+    ],
+    1
+  ],
+  [
+    "1.5",
+    "What is conflict?",
+    [
+      "A serious disagreement or struggle",
+      "A complete agreement",
+      "A government service",
+      "A type of election"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does accountable mean?",
+    [
+      "Responsible for your actions",
+      "Free from all rules",
+      "Unable to make decisions",
+      "Allowed to avoid responsibility"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does irresponsible mean?",
+    [
+      "Failing to act responsibly",
+      "Taking responsibility",
+      "Following through on duties",
+      "Explaining your actions"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What is restitution?",
+    [
+      "Something used to repair a wrong or harm",
+      "A disagreement between groups",
+      "A political organization",
+      "A government election"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What is compensation?",
+    [
+      "Something given for a loss or damage",
+      "A type of government",
+      "A political argument",
+      "A court building"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does negotiate mean?",
+    [
+      "Discussing to reach an agreement",
+      "Forcing someone to agree",
+      "Making a court ruling",
+      "Avoiding a problem"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does compromise mean?",
+    [
+      "Each side gives up something to reach agreement",
+      "One side gets everything",
+      "A judge decides the outcome",
+      "Neither side discusses the issue"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does arbitrate mean?",
+    [
+      "A neutral person makes a decision in a dispute",
+      "Both sides refuse to talk",
+      "One side forces an agreement",
+      "Citizens vote in an election"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What is a judge?",
+    [
+      "An official who decides legal cases",
+      "A person who runs a political party",
+      "A citizen who writes laws",
+      "A person who negotiates every dispute"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does mediate mean?",
+    [
+      "Help people communicate toward an agreement",
+      "Make a legal ruling",
+      "Force one side to surrender",
+      "Avoid getting involved"
+    ],
+    0
+  ],
+  [
+    "1.5",
+    "What does intervene mean?",
+    [
+      "Become involved to affect a situation",
+      "Stay completely uninvolved",
+      "Agree with both sides",
+      "Avoid a situation"
+    ],
+    0
+  ]
+];
+
+let quiz = [], current = 0, score = 0, answered = false, lastCorrectPosition = -1;
+
+function shuffle(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function startQuiz() {
+  quiz = shuffle([...questions]);
+  current = 0;
+  score = 0;
+  lastCorrectPosition = -1;
+  document.getElementById("game").style.display = "block";
+  document.getElementById("result").style.display = "none";
+  showQuestion();
+}
+
+function showQuestion() {
+  answered = false;
+  const q = quiz[current];
+  document.getElementById("number").textContent = `Question ${current + 1} of ${quiz.length}`;
+  document.getElementById("score").textContent = `Score: ${score}`;
+  document.getElementById("bar").style.width = `${(current / quiz.length) * 100}%`;
+  document.getElementById("section").textContent = `Section ${q[0]}`;
+  document.getElementById("question").textContent = q[1];
+
+  const choices = document.getElementById("choices");
+  choices.innerHTML = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("next").style.display = "none";
+
+  let answers = q[2].map((text, i) => ({text, correct: i === q[3]}));
+  let shuffledAnswers;
+
+  // Randomize the answer boxes for every question. Also avoid putting
+  // the correct answer in the exact same position twice in a row.
+  do {
+    shuffledAnswers = shuffle(answers);
+  } while (
+    shuffledAnswers.findIndex(answer => answer.correct) === lastCorrectPosition
+  );
+
+  lastCorrectPosition = shuffledAnswers.findIndex(answer => answer.correct);
+
+  shuffledAnswers.forEach((answer, index) => {
+    const button = document.createElement("button");
+    button.className = "choice";
+
+    const letter = document.createElement("span");
+    letter.className = "choice-letter";
+    letter.textContent = String.fromCharCode(65 + index);
+
+    const text = document.createElement("span");
+    text.textContent = answer.text;
+
+    button.appendChild(letter);
+    button.appendChild(text);
+    button.onclick = () => chooseAnswer(button, answer.correct, q[2][q[3]]);
+    choices.appendChild(button);
+  });
+}
+
+function chooseAnswer(button, correct, correctText) {
+  if (answered) return;
+  answered = true;
+
+  document.querySelectorAll(".choice").forEach(b => b.disabled = true);
+
+  if (correct) {
+    score++;
+    button.classList.add("correct");
+    document.getElementById("feedback").textContent = "Correct! ✅";
+  } else {
+    button.classList.add("wrong");
+    document.getElementById("feedback").textContent = "Incorrect ❌ Correct answer: " + correctText;
+    document.querySelectorAll(".choice").forEach(b => {
+      if (b.textContent === correctText) b.classList.add("correct");
+    });
+  }
+
+  document.getElementById("score").textContent = `Score: ${score}`;
+  document.getElementById("next").style.display = "inline-block";
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= quiz.length) {
+    document.getElementById("game").style.display = "none";
+    document.getElementById("result").style.display = "block";
+    document.getElementById("finalScore").textContent = `${score} / ${quiz.length}`;
+    const percent = Math.round(score / quiz.length * 100);
+    document.getElementById("message").textContent =
+      percent >= 90 ? "Excellent work! 🎉" :
+      percent >= 75 ? "Great job! 👍" :
+      percent >= 60 ? "Good effort! Review the ones you missed." :
+      "Keep practicing — you can improve this score!";
+    return;
+  }
+  showQuestion();
+}
+
+startQuiz();
+</script>
+</body>
+</html>
